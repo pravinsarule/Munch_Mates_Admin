@@ -15,8 +15,8 @@ const CelebrationCards = () => {
   const [editingCard, setEditingCard] = useState(null);
   const [categoryFilter, setCategoryFilter] = useState('');
 
-  const BASE_URL = 'http://localhost:5000/api/occasion-cards';
-  const IMAGE_BASE_URL = 'http://localhost:5000/uploads/';
+  const BASE_URL = 'https://munch-mates.onrender.com/api/occasion-cards';
+  const IMAGE_BASE_URL = 'https://munch-mates.onrender.com/uploads/';
 
   useEffect(() => {
     fetchCards();

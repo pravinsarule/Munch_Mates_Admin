@@ -16,8 +16,8 @@ const Chef = () => {
   });
   const [editingChef, setEditingChef] = useState(null);
 
-  const BASE_URL = 'http://localhost:5000/api/chefs';
-  const IMAGE_BASE_URL = 'http://localhost:5000/uploads/';
+  const BASE_URL = 'https://munch-mates.onrender.com/api/chefs';
+  const IMAGE_BASE_URL = 'https://munch-mates.onrender.com/uploads/';
 
   useEffect(() => {
     fetchChefs();
