@@ -94,7 +94,7 @@ const Header = ({ toggleSidebar, isAuthenticated, adminName = "", onLogout }) =>
       console.log("Token found:", token);
 
       await axios.post(
-        "https://munch-mates.onrender.com/api/auth/logout",
+        "https://munch-mates.onrender.com/api/admin/auth/logout",
         {},
         {
           headers: {
