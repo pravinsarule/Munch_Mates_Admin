@@ -1,5 +1,3 @@
-
-
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
@@ -7,12 +5,15 @@ import { FiEdit, FiTrash2 } from 'react-icons/fi';
 
 const Menus = () => {
   const [menus, setMenus] = useState([]);
+  const [filteredMenus, setFilteredMenus] = useState([]);
+  const [filter, setFilter] = useState('all');
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     price: '',
     image: null,
+    category: 'veg',
   });
   const [editingMenu, setEditingMenu] = useState(null);
 
@@ -26,17 +27,28 @@ const Menus = () => {
   const fetchMenus = async () => {
     try {
       const res = await axios.get(`${BASE_URL}`);
-      setMenus(res.data.reverse());
+      const reversed = res.data.reverse();
+      setMenus(reversed);
+      applyFilter(filter, reversed);
     } catch (err) {
       toast.error('Failed to fetch menus');
     }
   };
 
-  const handleChange = (e) => {
-    if (e.target.name === 'image') {
-      setFormData({ ...formData, image: e.target.files[0] });
+  const applyFilter = (filterType, menuList = menus) => {
+    if (filterType === 'all') {
+      setFilteredMenus(menuList);
     } else {
-      setFormData({ ...formData, [e.target.name]: e.target.value });
+      setFilteredMenus(menuList.filter((menu) => menu.category === filterType));
+    }
+  };
+
+  const handleChange = (e) => {
+    const { name, value, files } = e.target;
+    if (name === 'image') {
+      setFormData({ ...formData, image: files[0] });
+    } else {
+      setFormData({ ...formData, [name]: value });
     }
   };
 
@@ -51,6 +63,7 @@ const Menus = () => {
     data.append('title', formData.title);
     data.append('description', formData.description);
     data.append('price', formData.price);
+    data.append('category', formData.category);
     if (formData.image) {
       data.append('image', formData.image);
     }
@@ -67,7 +80,7 @@ const Menus = () => {
       fetchMenus();
       setShowForm(false);
       setEditingMenu(null);
-      setFormData({ title: '', description: '', price: '', image: null });
+      setFormData({ title: '', description: '', price: '', image: null, category: 'veg' });
     } catch (err) {
       toast.error('Failed to save menu');
     }
@@ -79,6 +92,7 @@ const Menus = () => {
       description: menu.description,
       price: menu.price,
       image: null,
+      category: menu.category,
     });
     setEditingMenu(menu);
     setShowForm(true);
@@ -98,12 +112,26 @@ const Menus = () => {
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-[#2a2e3b]">🍽️ Menu Management</h2>
-        <button
-          onClick={() => setShowForm(true)}
-          className="bg-[#e76f51] hover:bg-[#d45f3f] text-white px-4 py-2 rounded"
-        >
-          Add New Menu
-        </button>
+        <div className="flex gap-4 items-center">
+          <select
+            value={filter}
+            onChange={(e) => {
+              setFilter(e.target.value);
+              applyFilter(e.target.value);
+            }}
+            className="border rounded px-3 py-2"
+          >
+            <option value="all">All</option>
+            <option value="veg">Veg</option>
+            <option value="nonveg">Non-Veg</option>
+          </select>
+          <button
+            onClick={() => setShowForm(true)}
+            className="bg-[#e76f51] hover:bg-[#d45f3f] text-white px-4 py-2 rounded"
+          >
+            Add New Menu
+          </button>
+        </div>
       </div>
 
       {showForm && (
@@ -139,6 +167,16 @@ const Menus = () => {
                 required
                 className="w-full p-2 border rounded"
               />
+              <select
+                name="category"
+                value={formData.category}
+                onChange={handleChange}
+                required
+                className="w-full p-2 border rounded"
+              >
+                <option value="veg">Veg</option>
+                <option value="nonveg">Non-Veg</option>
+              </select>
               <input
                 type="file"
                 name="image"
@@ -157,7 +195,7 @@ const Menus = () => {
                   onClick={() => {
                     setShowForm(false);
                     setEditingMenu(null);
-                    setFormData({ title: '', description: '', price: '', image: null });
+                    setFormData({ title: '', description: '', price: '', image: null, category: 'veg' });
                   }}
                   className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded"
                 >
@@ -178,12 +216,13 @@ const Menus = () => {
               <th className="p-3 border">Title</th>
               <th className="p-3 border">Description</th>
               <th className="p-3 border">Price</th>
+              <th className="p-3 border">Category</th>
               <th className="p-3 border">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {menus.length > 0 ? (
-              menus.map((menu, index) => (
+            {filteredMenus.length > 0 ? (
+              filteredMenus.map((menu, index) => (
                 <tr key={menu.id} className="border-t hover:bg-gray-50">
                   <td className="p-3 border text-center">{index + 1}</td>
                   <td className="p-3 border text-center">
@@ -200,6 +239,7 @@ const Menus = () => {
                   <td className="p-3 border">{menu.title}</td>
                   <td className="p-3 border">{menu.description}</td>
                   <td className="p-3 border">₹{menu.price}</td>
+                  <td className="p-3 border text-center capitalize">{menu.category}</td>
                   <td className="p-3 border text-center">
                     <div className="flex justify-center gap-2">
                       <FiEdit
@@ -218,7 +258,7 @@ const Menus = () => {
               ))
             ) : (
               <tr>
-                <td colSpan="6" className="text-center p-4 text-gray-500">
+                <td colSpan="7" className="text-center p-4 text-gray-500">
                   No menus found
                 </td>
               </tr>
